@@ -1,0 +1,23 @@
+{
+  "name": "ai-voice-panel",
+  "version": "1.0.0", 
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "db:setup": "npx tsx lib/db/setup.ts",
+    "db:seed": "npx tsx lib/db/seed.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "production:setup": "npm run db:migrate && npm run db:seed && node scripts/sync-stripe-plans.js",
+    "production:build": "npm run type-check && npm run build",
+    "stripe:sync": "node scripts/sync-stripe-plans.js",
+    "admin:create": "node scripts/create-admin.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

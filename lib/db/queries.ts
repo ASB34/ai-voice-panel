@@ -1,6 +1,6 @@
 import { desc, and, eq, isNull } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, teamMembers, teams, users } from './schema';
+import { activityLogs, teamMembers, teams, users, subscriptionPlans } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -127,4 +127,41 @@ export async function getTeamForUser() {
   });
 
   return result?.team || null;
+}
+
+export async function getUserWithSubscription() {
+  const user = await getUser();
+  if (!user) {
+    return null;
+  }
+
+  const result = await db.query.teamMembers.findFirst({
+    where: eq(teamMembers.userId, user.id),
+    with: {
+      team: {
+        with: {
+          plan: true
+        }
+      },
+      user: {
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true
+        }
+      }
+    }
+  });
+
+  if (!result) {
+    return { user, subscription: null };
+  }
+
+  return {
+    user: result.user,
+    team: result.team,
+    subscription: result.team.plan,
+    role: result.role
+  };
 }

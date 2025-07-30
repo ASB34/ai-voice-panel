@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Button Test</title>
+</head>
+<body>
+    <h1>Conversation Button Test</h1>
+    <p>Check browser console for debug messages</p>
+    
+    <script>
+        // Test conversation ID
+        const testConversationId = 'conv_01k0cjhaqherjt69px0sdvetkj';
+        
+        // Test functions
+        async function testPlayAudio() {
+            console.log('🎵 Testing playAudio with ID:', testConversationId);
+            
+            try {
+                const response = await fetch(`/api/conversations/${testConversationId}/audio`);
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch audio: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                console.log('💾 Blob size:', blob.size, 'type:', blob.type);
+                
+                const url = window.URL.createObjectURL(blob);
+                console.log('🔗 Created URL:', url);
+                
+                const audio = new Audio(url);
+                audio.onended = () => {
+                    console.log('🔚 Audio ended');
+                    URL.revokeObjectURL(url);
+                };
+                audio.onerror = (e) => {
+                    console.error('🚨 Audio error:', e);
+                    URL.revokeObjectURL(url);
+                };
+                
+                await audio.play();
+                console.log('▶️ Audio started playing');
+                
+            } catch (error) {
+                console.error('🚨 Error:', error);
+            }
+        }
+        
+        async function testFetchDetails() {
+            console.log('🔍 Testing fetchDetails with ID:', testConversationId);
+            
+            try {
+                const response = await fetch(`/api/conversations/${testConversationId}`);
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch details: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📦 Received data:', data);
+                
+            } catch (error) {
+                console.error('🚨 Error:', error);
+            }
+        }
+        
+        async function testDownload() {
+            console.log('💾 Testing download with ID:', testConversationId);
+            
+            try {
+                const response = await fetch(`/api/conversations/${testConversationId}/audio`);
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to download: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                console.log('💾 Blob size:', blob.size, 'type:', blob.type);
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `test-conversation.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('✅ Download triggered');
+                
+            } catch (error) {
+                console.error('🚨 Error:', error);
+            }
+        }
+    </script>
+    
+    <button onclick="testPlayAudio()">Test Play Audio</button>
+    <button onclick="testFetchDetails()">Test Fetch Details</button>
+    <button onclick="testDownload()">Test Download</button>
+    
+    <div id="results"></div>
+</body>
+</html>

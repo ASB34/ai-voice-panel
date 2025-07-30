@@ -1,6 +1,6 @@
-import { getUser } from '@/lib/db/queries';
+import { getUserWithSubscription } from '@/lib/db/queries';
 
 export async function GET() {
-  const user = await getUser();
-  return Response.json(user);
+  const userWithSubscription = await getUserWithSubscription();
+  return Response.json(userWithSubscription);
 }

@@ -2,6 +2,9 @@ import { compare, hash } from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NewUser } from '@/lib/db/schema';
+import { db } from '@/lib/db/drizzle';
+import { users, teamMembers } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 const SALT_ROUNDS = 10;
@@ -43,6 +46,30 @@ export async function getSession() {
   return await verifyToken(session);
 }
 
+export async function getSessionWithTeam() {
+  const session = await getSession();
+  if (!session) return null;
+
+  // Get user's primary team
+  const [userTeam] = await db
+    .select({
+      teamId: teamMembers.teamId,
+      role: teamMembers.role,
+    })
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, session.user.id))
+    .limit(1);
+
+  return {
+    ...session,
+    user: {
+      ...session.user,
+      teamId: userTeam?.teamId || null,
+      teamRole: userTeam?.role || null,
+    }
+  };
+}
+
 export async function setSession(user: NewUser) {
   const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const session: SessionData = {
@@ -53,7 +80,7 @@ export async function setSession(user: NewUser) {
   (await cookies()).set('session', encryptedSession, {
     expires: expiresInOneDay,
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   });
 }

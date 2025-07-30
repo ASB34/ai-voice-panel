@@ -15,6 +15,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -27,6 +28,8 @@ yarn-error.log*
 
 # local env files
 .env
+.env*.local
+.env.production
 
 # vercel
 .vercel
@@ -34,8 +37,37 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editors
 .vscode
+.idea
 
 # Docker
 postgres_data/
-.env*.local
+
+# OS
+Thumbs.db
+
+# logs
+*.log
+logs/
+
+# runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# temporary folders
+tmp/
+temp/
+
+# deployment
+.deployment

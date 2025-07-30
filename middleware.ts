@@ -1,49 +1,39 @@
+import createIntlMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { signToken, verifyToken } from '@/lib/auth/session';
 
-const protectedRoutes = '/dashboard';
+const intlMiddleware = createIntlMiddleware({
+  locales: ['en', 'tr'],
+  defaultLocale: 'en'
+});
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get('session');
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
-
-  if (isProtectedRoute && !sessionCookie) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // Allow setup routes without locale prefix
+  if (pathname.startsWith('/setup') || pathname.startsWith('/api/setup')) {
+    return NextResponse.next();
   }
-
-  let res = NextResponse.next();
-
-  if (sessionCookie && request.method === 'GET') {
-    try {
-      const parsed = await verifyToken(sessionCookie.value);
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-      res.cookies.set({
-        name: 'session',
-        value: await signToken({
-          ...parsed,
-          expires: expiresInOneDay.toISOString()
-        }),
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        expires: expiresInOneDay
-      });
-    } catch (error) {
-      console.error('Error updating session:', error);
-      res.cookies.delete('session');
-      if (isProtectedRoute) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
-      }
-    }
+  
+  // Admin routes are protected by client-side layout authentication
+  // No server-side middleware auth needed to avoid Edge Runtime issues
+  
+  // Handle the intl middleware first
+  const response = intlMiddleware(request);
+  
+  // Extract locale from pathname and set it in a cookie for server actions
+  const localeMatch = pathname.match(/^\/([a-z]{2})(?:\/|$)/);
+  
+  if (localeMatch) {
+    const locale = localeMatch[1];
+    const responseWithCookie = response || NextResponse.next();
+    responseWithCookie.cookies.set('locale', locale);
+    return responseWithCookie;
   }
-
-  return res;
+  
+  return response;
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-  runtime: 'nodejs'
+  matcher: ['/', '/(tr|en)/:path*', '/setup/:path*']
 };

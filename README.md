@@ -1,119 +1,194 @@
-# Next.js SaaS Starter
+# Call Crafter AI - Voice Panel 🎙️
 
-This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.
+Comprehensive SaaS platform for managing AI voice agents with subscription billing, admin panel, and Stripe integration.
 
-**Demo: [https://next-saas-start.vercel.app/](https://next-saas-start.vercel.app/)**
+## 🚀 Features
 
-## Features
+### Core Features
+- **Multi-language Support** (English/Turkish)
+- **AI Voice Agents** management with ElevenLabs integration
+- **Phone Number** management and integration
+- **Real-time Conversations** tracking
+- **Advanced Analytics** and usage monitoring
 
-- Marketing landing page (`/`) with animated Terminal element
-- Pricing page (`/pricing`) which connects to Stripe Checkout
-- Dashboard pages with CRUD operations on users/teams
-- Basic RBAC with Owner and Member roles
-- Subscription management with Stripe Customer Portal
-- Email/password authentication with JWTs stored to cookies
-- Global middleware to protect logged-in routes
-- Local middleware to protect Server Actions or validate Zod schemas
-- Activity logging system for any user events
+### Billing & Subscriptions
+- **Stripe Integration** with multiple subscription plans
+- **Usage-based Billing** with limits and tracking
+- **Admin Dashboard** for plan management
+- **Automated Invoicing** and payment processing
 
-## Tech Stack
+### Admin Panel
+- **User Management** with role-based access
+- **Subscription Management** with plan changes
+- **Usage Analytics** and monitoring
+- **System Settings** and configuration
 
-- **Framework**: [Next.js](https://nextjs.org/)
-- **Database**: [Postgres](https://www.postgresql.org/)
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **Payments**: [Stripe](https://stripe.com/)
-- **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
+### Security
+- **JWT Authentication** with secure sessions
+- **Role-based Authorization** (owner, admin, member)
+- **Password Hashing** with bcrypt
+- **CSRF Protection** and security headers
 
-## Getting Started
+## 🛠️ Tech Stack
 
+- **Framework**: Next.js 15 (App Router)
+- **Database**: PostgreSQL with Drizzle ORM
+- **Payments**: Stripe with webhooks
+- **Authentication**: Custom JWT implementation
+- **Styling**: Tailwind CSS with Shadcn/UI
+- **Language**: TypeScript
+- **Deployment**: Production-ready build
+
+## 📦 Installation
+
+### Development Setup
+
+1. **Clone the repository**
 ```bash
-git clone https://github.com/nextjs/saas-starter
-cd saas-starter
+git clone <repository-url>
+cd ai-voice-panel
+```
+
+2. **Install dependencies**
+```bash
+npm install
+# or
 pnpm install
 ```
 
-## Running Locally
-
-[Install](https://docs.stripe.com/stripe-cli) and log in to your Stripe account:
-
+3. **Environment setup**
 ```bash
-stripe login
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-Use the included setup script to create your `.env` file:
-
+4. **Database setup**
 ```bash
-pnpm db:setup
+npm run db:migrate
+npm run db:seed
 ```
 
-Run the database migrations and seed the database with a default user and team:
-
+5. **Stripe setup**
 ```bash
-pnpm db:migrate
-pnpm db:seed
+npm run stripe:sync
 ```
 
-This will create the following user and team:
-
-- User: `test@test.com`
-- Password: `admin123`
-
-You can also create new users through the `/sign-up` route.
-
-Finally, run the Next.js development server:
-
+6. **Start development**
 ```bash
-pnpm dev
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
+### Production Deployment
 
-You can listen for Stripe webhooks locally through their CLI to handle subscription change events:
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed production deployment instructions.
+
+## 🔧 Configuration
+
+### Environment Variables
 
 ```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/database
+
+# Stripe
+STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Application
+BASE_URL=https://yourdomain.com
+AUTH_SECRET=your-super-secure-jwt-secret
+
+# ElevenLabs (optional)
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
 ```
 
-## Testing Payments
+### Subscription Plans
 
-To test Stripe payments, use the following test card details:
+The system supports multiple subscription plans with configurable:
+- Voice agent limits
+- Phone number limits
+- Monthly conversation limits
+- Usage minutes per month
+- Feature access (API, analytics, priority support)
 
-- Card Number: `4242 4242 4242 4242`
-- Expiration: Any future date
-- CVC: Any 3-digit number
+## 🎯 API Endpoints
 
-## Going to Production
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/user` - Get current user info
 
-When you're ready to deploy your SaaS application to production, follow these steps:
+### Voice Agents
+- `GET /api/voice-agents` - List voice agents
+- `POST /api/voice-agents` - Create voice agent
+- `PUT /api/voice-agents/[id]` - Update voice agent
+- `DELETE /api/voice-agents/[id]` - Delete voice agent
 
-### Set up a production Stripe webhook
+### Billing
+- `GET /api/billing/plans` - List subscription plans
+- `GET /api/billing/usage` - Get current usage
+- `POST /api/stripe/create-checkout` - Create Stripe checkout
 
-1. Go to the Stripe Dashboard and create a new webhook for your production environment.
-2. Set the endpoint URL to your production API route (e.g., `https://yourdomain.com/api/stripe/webhook`).
-3. Select the events you want to listen for (e.g., `checkout.session.completed`, `customer.subscription.updated`).
+### Admin
+- `GET /api/admin/users` - List all users (admin only)
+- `PUT /api/admin/users/[id]` - Update user (admin only)
+- `GET /api/admin/stats` - System statistics (admin only)
 
-### Deploy to Vercel
+## 🔐 Security Features
 
-1. Push your code to a GitHub repository.
-2. Connect your repository to [Vercel](https://vercel.com/) and deploy it.
-3. Follow the Vercel deployment process, which will guide you through setting up your project.
+- **JWT-based Authentication** with secure sessions
+- **Role-based Access Control** (RBAC)
+- **Password Security** with bcrypt hashing
+- **CSRF Protection** via security headers
+- **Input Validation** with Zod schemas
+- **SQL Injection Prevention** via Drizzle ORM
 
-### Add environment variables
+## 📈 Production Features
 
-In your Vercel project settings (or during deployment), add all the necessary environment variables. Make sure to update the values for the production environment, including:
+- **Optimized Build** with Next.js static generation
+- **Security Headers** for HTTPS environments
+- **Error Boundaries** for graceful error handling
+- **Health Check** endpoint (`/api/health`) for monitoring
+- **Database Connection** pooling
+- **Console Log** filtering for production
 
-1. `BASE_URL`: Set this to your production domain.
-2. `STRIPE_SECRET_KEY`: Use your Stripe secret key for the production environment.
-3. `STRIPE_WEBHOOK_SECRET`: Use the webhook secret from the production webhook you created in step 1.
-4. `POSTGRES_URL`: Set this to your production database URL.
-5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
+## 🚀 Getting Started
 
-## Other Templates
+### Testing Payments
+Use Stripe test cards:
+- **Success**: `4242 4242 4242 4242`
+- **Decline**: `4000 0000 0000 0002`
+- Any future expiry date and CVC
 
-While this template is intentionally minimal and to be used as a learning resource, there are other paid versions in the community which are more full-featured:
+### Default Admin User
+After running `npm run db:seed`:
+- **Email**: `admin@test.com`
+- **Password**: `admin123`
 
-- https://achromatic.dev
-- https://shipfa.st
-- https://makerkit.dev
-- https://zerotoshipped.com
-- https://turbostarter.dev
+### Production Deployment
+1. Follow [DEPLOYMENT.md](./DEPLOYMENT.md) guide
+2. Set up Stripe webhooks
+3. Configure environment variables
+4. Run production build: `npm run production:build`
+5. Start server: `npm start`
+
+## 🔧 Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Production build
+- `npm run production:setup` - Complete production setup
+- `npm run stripe:sync` - Sync subscription plans with Stripe
+- `npm run admin:create` - Create admin user
+- `npm run db:migrate` - Run database migrations
+- `npm run db:seed` - Seed database with sample data
+
+## 📊 Monitoring
+
+- **Health Check**: `/api/health`
+- **Admin Dashboard**: `/admin`
+- **Usage Analytics**: Real-time usage tracking
+- **Error Logging**: Structured application logs
+
+---
+
+Built with ❤️ using Next.js, TypeScript, and modern web technologies.
