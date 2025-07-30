@@ -91,8 +91,8 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed production deployment instruct
 DATABASE_URL=postgresql://username:password@localhost:5432/database
 
 # Stripe
-STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+STRIPE_SECRET_KEY=sk_live_your_actual_stripe_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_actual_webhook_secret_here
 
 # Application
 BASE_URL=https://yourdomain.com
