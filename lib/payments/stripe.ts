@@ -7,8 +7,33 @@ import {
   updateTeamSubscription
 } from '@/lib/db/queries';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil'
+// Lazy Stripe client initialization
+let _stripe: Stripe | null = null;
+
+function getStripeClient(): Stripe {
+  if (!_stripe) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    
+    if (!secretKey) {
+      if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+        throw new Error('Stripe secret key is required for production. Please set STRIPE_SECRET_KEY environment variable.');
+      }
+      // Development için placeholder
+      throw new Error('Stripe secret key not configured');
+    }
+    
+    _stripe = new Stripe(secretKey, {
+      apiVersion: '2025-04-30.basil'
+    });
+  }
+  
+  return _stripe;
+}
+
+export const stripe = new Proxy({} as Stripe, {
+  get(target, prop) {
+    return getStripeClient()[prop as keyof Stripe];
+  }
 });
 
 export async function createCheckoutSession({

@@ -5,12 +5,23 @@ import { AgentConfig, ConversationHistory, ElevenLabsConfig } from './types';
 let client: ElevenLabsClient | null = null;
 
 export function getElevenLabsClient(config?: ElevenLabsConfig): ElevenLabsClient {
-  if (!client && config) {
-    client = new ElevenLabsClient({ apiKey: config.apiKey });
+  // Build sırasında API key gerekli değil, runtime'da kontrol et
+  const apiKey = config?.apiKey || process.env.ELEVENLABS_API_KEY;
+  
+  if (!client && apiKey) {
+    client = new ElevenLabsClient({ apiKey });
   }
+  
   if (!client) {
-    throw new Error('ElevenLabs client not initialized');
+    // Build sırasında placeholder client oluştur
+    if (!apiKey && (process.env.NODE_ENV === 'production' || process.env.VERCEL)) {
+      throw new Error('ElevenLabs API key is required for production. Please set ELEVENLABS_API_KEY environment variable.');
+    }
+    
+    // Development için placeholder
+    client = new ElevenLabsClient({ apiKey: apiKey || 'placeholder-key-for-build' });
   }
+  
   return client;
 }
 
@@ -19,7 +30,16 @@ export class ElevenLabsClientWrapper {
   private client: ElevenLabsClient;
 
   constructor(config: ElevenLabsConfig) {
-    this.client = new ElevenLabsClient({ apiKey: config.apiKey });
+    // Build sırasında API key kontrolü yapma
+    const apiKey = config.apiKey || process.env.ELEVENLABS_API_KEY;
+    
+    if (!apiKey && (process.env.NODE_ENV === 'production' || process.env.VERCEL)) {
+      throw new Error('ElevenLabs API key is required for production');
+    }
+    
+    this.client = new ElevenLabsClient({ 
+      apiKey: apiKey || 'placeholder-key-for-build' 
+    });
   }
 
   // Create a new conversational agent using the official SDK
