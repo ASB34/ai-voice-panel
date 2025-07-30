@@ -6,9 +6,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['pg', 'bcryptjs'],
-  },
+  serverExternalPackages: ['pg', 'bcryptjs'],
   // Security headers
   async headers() {
     return [
