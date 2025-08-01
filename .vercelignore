@@ -1,0 +1,29 @@
+# Test files
+test-*.js
+scripts/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Documentation
+README.md
+ELEVENLABS_ISSUES_REPORT.md
+
+# Development files
+.env.local
+.env.example
+
+# Build artifacts
+node_modules/
+.next/
+out/
+
+# IDE files
+.vscode/
+.idea/
+
+# Backup files
+*.new
+*.bak
+*.backup

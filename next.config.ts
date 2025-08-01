@@ -11,6 +11,15 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   serverExternalPackages: ['pg', 'bcryptjs'],
+  experimental: {
+    esmExternals: 'loose' as const,
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  // Optimize build performance
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   // Security headers
   async headers() {
     return [
