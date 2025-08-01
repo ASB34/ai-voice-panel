@@ -20,16 +20,17 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   
-  // Webpack optimization for build stability
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
-    // Fix for client-reference-manifest issues
-    if (!isServer) {
-      config.resolve = config.resolve || {};
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
+  // Fix client-reference-manifest issues for Next.js 15
+  webpack: (config, { isServer, dev }) => {
+    if (!isServer && !dev) {
+      // Ensure client-reference-manifest files are generated properly
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks?.cacheGroups,
+          default: false,
+          vendors: false,
+        },
       };
     }
     
