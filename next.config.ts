@@ -1,9 +1,9 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import type { NextConfig } from 'next';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -12,14 +12,30 @@ const nextConfig = {
   },
   serverExternalPackages: ['pg', 'bcryptjs'],
   experimental: {
-    esmExternals: 'loose' as const,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
+  
   // Optimize build performance
-  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  
+  // Webpack optimization for build stability
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+    // Fix for client-reference-manifest issues
+    if (!isServer) {
+      config.resolve = config.resolve || {};
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    return config;
+  },
+  
   // Security headers
   async headers() {
     return [
