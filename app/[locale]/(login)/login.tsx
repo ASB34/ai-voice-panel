@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,10 +12,31 @@ import { ActionState } from '@/lib/auth/middleware';
 import { useTranslations, useLocale } from 'next-intl';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect');
-  const priceId = searchParams.get('priceId');
-  const inviteId = searchParams.get('inviteId');
+  let searchParams, redirect, priceId, inviteId;
+  
+  try {
+    searchParams = useSearchParams();
+    redirect = searchParams?.get('redirect') || '';
+    priceId = searchParams?.get('priceId') || '';
+    inviteId = searchParams?.get('inviteId') || '';
+  } catch (error) {
+    console.error('Error getting search params:', error);
+    // Log the error to our endpoint
+    fetch('/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: error instanceof Error ? error.message : 'Search params error',
+        stack: error instanceof Error ? error.stack : undefined,
+        url: window.location.href
+      })
+    }).catch(console.error);
+    
+    // Fallback values
+    redirect = '';
+    priceId = '';
+    inviteId = '';
+  }
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === 'signin' ? signIn : signUp,
     { error: '' }
