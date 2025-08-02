@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
       ORDER BY table_name
     `;
 
+    // Create missing tables if needed
+    const createTablesResult = await createMissingTables();
+
     // Check if users table exists and its structure
     let usersTableStructure = null;
     try {
@@ -40,6 +43,7 @@ export async function GET(request: NextRequest) {
       success: true,
       connectionTest,
       tables: tables.map(t => t.table_name),
+      createTablesResult,
       usersTableStructure,
       userCount,
       environment: {
@@ -56,5 +60,38 @@ export async function GET(request: NextRequest) {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
+  }
+}
+
+async function createMissingTables() {
+  try {
+    // Create activity_logs table
+    await client`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id SERIAL PRIMARY KEY,
+        team_id INTEGER REFERENCES teams(id),
+        user_id INTEGER REFERENCES users(id),
+        action TEXT NOT NULL,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        ip_address VARCHAR(45)
+      )
+    `;
+
+    // Create invitations table
+    await client`
+      CREATE TABLE IF NOT EXISTS invitations (
+        id SERIAL PRIMARY KEY,
+        team_id INTEGER NOT NULL REFERENCES teams(id),
+        email VARCHAR(255) NOT NULL,
+        role VARCHAR(50) NOT NULL,
+        invited_by INTEGER NOT NULL REFERENCES users(id),
+        invited_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending'
+      )
+    `;
+
+    return { success: true, message: 'Missing tables created' };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
