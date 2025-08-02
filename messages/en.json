@@ -18,8 +18,11 @@
     "createAccount": "Create an account",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
+    "noAccount": "Don't have an account?",
     "signInWithEmail": "Sign in with email",
-    "signUpWithEmail": "Sign up with email"
+    "signUpWithEmail": "Sign up with email",
+    "signInDescription": "Enter your email and password to access your account",
+    "signingIn": "Signing In..."
   },
   "dashboard": {
     "title": "Call Crafter AI",

@@ -18,8 +18,11 @@
     "createAccount": "Hesap oluştur",
     "alreadyHaveAccount": "Zaten hesabın var mı?",
     "dontHaveAccount": "Hesabın yok mu?",
+    "noAccount": "Hesabın yok mu?",
     "signInWithEmail": "E-posta ile giriş yap",
-    "signUpWithEmail": "E-posta ile kayıt ol"
+    "signUpWithEmail": "E-posta ile kayıt ol",
+    "signInDescription": "Hesabınıza erişmek için e-posta ve şifrenizi girin",
+    "signingIn": "Giriş yapılıyor..."
   },
   "dashboard": {
     "title": "Call Crafter AI",

@@ -1,9 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { signIn } from '../actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function SignInPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
   const t = useTranslations('auth');
   
   let redirect, priceId, inviteId;
@@ -18,58 +29,101 @@ export default function SignInPage() {
     priceId = '';
     inviteId = '';
   }
-  
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('redirect', redirect);
+      formData.append('priceId', priceId);
+      formData.append('inviteId', inviteId);
+
+      const result = await signIn(null, formData);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Redirect based on URL parameter or default to dashboard
+        const redirectUrl = redirect || '/dashboard';
+        router.push(redirectUrl);
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {t('welcomeBack')}
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Testing with useSearchParams
-          </p>
-          {redirect && <p className="text-xs text-gray-500">Redirect: {redirect}</p>}
-        </div>
-        <form className="mt-8 space-y-6">
-          <input type="hidden" name="redirect" value={redirect} />
-          <input type="hidden" name="priceId" value={priceId} />
-          <input type="hidden" name="inviteId" value={inviteId} />
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">{t('welcomeBack')}</CardTitle>
+          <CardDescription className="text-center">
+            {t('signInDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
           
-          <div className="space-y-4">
-            <div>
-              <input
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">{t('email')}</Label>
+              <Input
                 id="email"
-                name="email"
                 type="email"
-                autoComplete="email"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder={t('email')}
-              />
-            </div>
-            <div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder={t('password')}
+                disabled={isLoading}
+                autoComplete="email"
               />
             </div>
-          </div>
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">{t('password')}</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder={t('password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading}
             >
-              {t('signIn')}
-            </button>
+              {isLoading ? t('signingIn') : t('signIn')}
+            </Button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              {t('noAccount')}{' '}
+              <a href="/sign-up" className="text-blue-600 hover:underline">
+                {t('signUp')}
+              </a>
+            </p>
           </div>
-        </form>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
