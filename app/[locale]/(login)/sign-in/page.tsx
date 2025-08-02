@@ -1,7 +1,23 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 
 export default function SignInPage() {
   const t = useTranslations('auth');
+  
+  let redirect, priceId, inviteId;
+  try {
+    const searchParams = useSearchParams();
+    redirect = searchParams?.get('redirect') || '';
+    priceId = searchParams?.get('priceId') || '';
+    inviteId = searchParams?.get('inviteId') || '';
+  } catch (error) {
+    console.error('Error getting search params:', error);
+    redirect = '';
+    priceId = '';
+    inviteId = '';
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -11,10 +27,15 @@ export default function SignInPage() {
             {t('welcomeBack')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Testing with translations
+            Testing with useSearchParams
           </p>
+          {redirect && <p className="text-xs text-gray-500">Redirect: {redirect}</p>}
         </div>
         <form className="mt-8 space-y-6">
+          <input type="hidden" name="redirect" value={redirect} />
+          <input type="hidden" name="priceId" value={priceId} />
+          <input type="hidden" name="inviteId" value={inviteId} />
+          
           <div className="space-y-4">
             <div>
               <input
