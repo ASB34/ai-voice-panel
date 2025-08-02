@@ -39,16 +39,23 @@ async function logActivity(
   type: ActivityType,
   ipAddress?: string
 ) {
-  if (teamId === null || teamId === undefined) {
-    return;
+  try {
+    if (teamId === null || teamId === undefined) {
+      console.log('Skipping activity log - no team ID provided');
+      return;
+    }
+    const newActivity: NewActivityLog = {
+      teamId,
+      userId,
+      action: type,
+      ipAddress: ipAddress || ''
+    };
+    await db.insert(activityLogs).values(newActivity);
+    console.log('Activity logged successfully:', type);
+  } catch (error) {
+    console.error('Failed to log activity:', error);
+    // Don't throw error - continue with signin process
   }
-  const newActivity: NewActivityLog = {
-    teamId,
-    userId,
-    action: type,
-    ipAddress: ipAddress || ''
-  };
-  await db.insert(activityLogs).values(newActivity);
 }
 
 const signInSchema = z.object({
@@ -93,10 +100,12 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     };
   }
 
-  await Promise.all([
-    setSession(foundUser),
-    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN)
-  ]);
+  await setSession(foundUser);
+  
+  // Only log activity if user has a team
+  if (foundTeam?.id) {
+    await logActivity(foundTeam.id, foundUser.id, ActivityType.SIGN_IN);
+  }
 
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {
