@@ -21,16 +21,19 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     inviteId = searchParams?.get('inviteId') || '';
   } catch (error) {
     console.error('Error getting search params:', error);
-    // Log the error to our endpoint
-    fetch('/api/log-error', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: error instanceof Error ? error.message : 'Search params error',
-        stack: error instanceof Error ? error.stack : undefined,
-        url: window.location.href
-      })
-    }).catch(console.error);
+    // Log the error to our endpoint only if we're in the browser
+    if (typeof window !== 'undefined') {
+      fetch('/api/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: error instanceof Error ? error.message : 'Search params error',
+          stack: error instanceof Error ? error.stack : undefined,
+          url: window.location.href,
+          context: 'login_component'
+        })
+      }).catch(console.error);
+    }
     
     // Fallback values
     redirect = '';
