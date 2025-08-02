@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/drizzle';
-import { users, teams, teamMembers } from '@/lib/db/schema';
+import { getClient } from '@/lib/db/drizzle';
 import { hashPassword } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
@@ -12,26 +11,30 @@ export async function POST(request: NextRequest) {
 
     // Şifreyi hash'le
     const passwordHash = await hashPassword(password);
+    
+    const client = getClient();
 
     // Önce team oluştur
-    const [team] = await db.insert(teams).values({
-      name: "Test Team"
-    }).returning();
+    const teamResult = await client`
+      INSERT INTO teams (name) 
+      VALUES ('Test Team') 
+      RETURNING id, name
+    `;
+    const team = teamResult[0];
 
     // User'ı oluştur
-    const [user] = await db.insert(users).values({
-      email,
-      passwordHash,
-      name,
-      role: 'owner'
-    }).returning();
+    const userResult = await client`
+      INSERT INTO users (email, password_hash, name, role) 
+      VALUES (${email}, ${passwordHash}, ${name}, 'owner') 
+      RETURNING id, email, name
+    `;
+    const user = userResult[0];
 
     // Team member olarak ekle
-    await db.insert(teamMembers).values({
-      userId: user.id,
-      teamId: team.id,
-      role: 'owner'
-    });
+    await client`
+      INSERT INTO team_members (user_id, team_id, role) 
+      VALUES (${user.id}, ${team.id}, 'owner')
+    `;
 
     return NextResponse.json({
       success: true,
